@@ -98,3 +98,55 @@ Use `gdisk` utility below to create a single partition on each of the 3 disks. P
                                                   sudo lvs
                                                   
   <img width="565" alt="Screenshot 2022-05-02 at 13 17 23" src="https://user-images.githubusercontent.com/80678596/166225639-4891cc38-e8ba-4e29-9aea-60de52b2fd01.png">
+
+- Verify the entire setup
+
+                                    sudo vgdisplay -v 
+
+                                       sudo lsblk
+                                     
+<img width="477" alt="Screenshot 2022-05-02 at 13 19 58" src="https://user-images.githubusercontent.com/80678596/166226230-4d2a5960-0bc4-4375-a843-b1a9cf54b352.png">
+
+- Use `mkfs.ext4` to format the logical volumes with ext4 filesystem
+
+                              sudo mkfs -t ext4 /dev/webdata-vg/apps-lv
+                              
+                              sudo mkfs -t ext4 /dev/webdata-vg/logs-lv
+                              
+- Create /var/www/html directory to store website files
+
+                                sudo mkdir -p /var/www/html
+                                
+- Create /home/recovery/logs to store backup of log data
+                              
+                              sudo mkdir -p /home/recovery/logs
+                              
+- Mount /var/www/html on apps-lv logical volume
+
+                      sudo mount /dev/webdata-vg/apps-lv /var/www/html/
+                      
+- Use `rsync` utility to backup all the files in the log directory `/var/log into /home/recovery/logs` (This is required before mounting the file system)
+
+                      sudo rsync -av /var/log/. /home/recovery/logs/
+                      
+- Mount /var/log on logs-lv logical volume. (Note that all the existing data on /var/log will be deleted. That is why its very important to Create /var/www/html directory to store website files)
+                                  
+                                  sudo mount /dev/webdata-vg/logs-lv /var/log
+
+- Restore log files back into /var/log directory
+
+                                      sudo rsync -av /home/recovery/logs/. /var/log
+                                      
+- Update `/etc/fstab` file so that the mount configuration will persist after restart of the server. The UUID of the device will be used to update the /etc/fstab file;
+
+                                                    sudo blkid
+                                                    
+<img width="1120" alt="Screenshot 2022-05-02 at 13 37 19" src="https://user-images.githubusercontent.com/80678596/166227698-5d00a156-535d-44ab-b4cf-5cf65361144b.png">
+
+- oprn the /etc/fstab and update it using your own UUID and rememeber to remove the leading and ending quotes.
+
+                                                     sudo vi /etc/fstab
+                                    
+
+<img width="807" alt="Screenshot 2022-05-02 at 13 47 12" src="https://user-images.githubusercontent.com/80678596/166228776-ac0ee418-6069-45a4-b8e8-a33bb0528975.png">
+
