@@ -145,8 +145,18 @@ Use `gdisk` utility below to create a single partition on each of the 3 disks. P
 
 - oprn the /etc/fstab and update it using your own UUID and rememeber to remove the leading and ending quotes.
 
-                                                     sudo vi /etc/fstab
+                                                     sudo vi /etc/fstab                                    
+
+<img width="759" alt="Screenshot 2022-05-02 at 13 55 54" src="https://user-images.githubusercontent.com/80678596/166229823-2d90e954-8f71-4e0f-b317-daa5ae56fcf6.png">
+
+- Test the configuration and reload the daemon
                                     
+                                    sudo mount -a
+                                    
+                              sudo systemctl daemon-reload
+                              
+- Verify your setup by running the command below and the output must look like this:
 
-<img width="807" alt="Screenshot 2022-05-02 at 13 47 12" src="https://user-images.githubusercontent.com/80678596/166228776-ac0ee418-6069-45a4-b8e8-a33bb0528975.png">
-
+                                  df -h
+                                  
+<img width="574" alt="Screenshot 2022-05-02 at 13 54 50" src="https://user-images.githubusercontent.com/80678596/166229691-7ff1cb7a-ac93-4231-9599-3e5ecd98fa6a.png">
