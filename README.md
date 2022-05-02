@@ -71,7 +71,7 @@ Use `gdisk` utility below to create a single partition on each of the 3 disks. P
                             sudo pvcreate /dev/xvdc1
                             sudo pvcreate /dev/xvdd1
                             
-- Verify that your Physical volume has been created successfully by running 
+ - Verify that your Physical volume has been created successfully by running 
 
                                 sudo pvs
                                 
@@ -99,7 +99,7 @@ Use `gdisk` utility below to create a single partition on each of the 3 disks. P
                                                   
   <img width="565" alt="Screenshot 2022-05-02 at 13 17 23" src="https://user-images.githubusercontent.com/80678596/166225639-4891cc38-e8ba-4e29-9aea-60de52b2fd01.png">
 
-- Verify the entire setup
+ - Verify the entire setup
 
                                     sudo vgdisplay -v 
 
@@ -107,56 +107,82 @@ Use `gdisk` utility below to create a single partition on each of the 3 disks. P
                                      
 <img width="477" alt="Screenshot 2022-05-02 at 13 19 58" src="https://user-images.githubusercontent.com/80678596/166226230-4d2a5960-0bc4-4375-a843-b1a9cf54b352.png">
 
-- Use `mkfs.ext4` to format the logical volumes with ext4 filesystem
+ - Use `mkfs.ext4` to format the logical volumes with ext4 filesystem
 
                               sudo mkfs -t ext4 /dev/webdata-vg/apps-lv
                               
                               sudo mkfs -t ext4 /dev/webdata-vg/logs-lv
                               
-- Create /var/www/html directory to store website files
+ - Create /var/www/html directory to store website files
 
                                 sudo mkdir -p /var/www/html
                                 
-- Create /home/recovery/logs to store backup of log data
+ - Create /home/recovery/logs to store backup of log data
                               
                               sudo mkdir -p /home/recovery/logs
                               
-- Mount /var/www/html on apps-lv logical volume
+ - Mount /var/www/html on apps-lv logical volume
 
                       sudo mount /dev/webdata-vg/apps-lv /var/www/html/
                       
-- Use `rsync` utility to backup all the files in the log directory `/var/log into /home/recovery/logs` (This is required before mounting the file system)
+  - Use `rsync` utility to backup all the files in the log directory `/var/log into /home/recovery/logs` (This is required before mounting the file system)
 
-                      sudo rsync -av /var/log/. /home/recovery/logs/
-                      
-- Mount /var/log on logs-lv logical volume. (Note that all the existing data on /var/log will be deleted. That is why its very important to Create /var/www/html directory to store website files)
-                                  
-                                  sudo mount /dev/webdata-vg/logs-lv /var/log
+                        sudo rsync -av /var/log/. /home/recovery/logs/
 
-- Restore log files back into /var/log directory
+  - Mount /var/log on logs-lv logical volume. (Note that all the existing data on /var/log will be deleted. That is why its very important to Create /var/www/html directory to store website files)
 
-                                      sudo rsync -av /home/recovery/logs/. /var/log
-                                      
-- Update `/etc/fstab` file so that the mount configuration will persist after restart of the server. The UUID of the device will be used to update the /etc/fstab file;
+                                    sudo mount /dev/webdata-vg/logs-lv /var/log
 
-                                                    sudo blkid
-                                                    
-<img width="1120" alt="Screenshot 2022-05-02 at 13 37 19" src="https://user-images.githubusercontent.com/80678596/166227698-5d00a156-535d-44ab-b4cf-5cf65361144b.png">
+  - Restore log files back into /var/log directory
 
-- oprn the /etc/fstab and update it using your own UUID and rememeber to remove the leading and ending quotes.
+                                        sudo rsync -av /home/recovery/logs/. /var/log
 
-                                                     sudo vi /etc/fstab                                    
+  - Update `/etc/fstab` file so that the mount configuration will persist after restart of the server. The UUID of the device will be used to update the /etc/fstab file;
 
-<img width="759" alt="Screenshot 2022-05-02 at 13 55 54" src="https://user-images.githubusercontent.com/80678596/166229823-2d90e954-8f71-4e0f-b317-daa5ae56fcf6.png">
+                                                      sudo blkid
 
-- Test the configuration and reload the daemon
-                                    
-                                    sudo mount -a
-                                    
-                              sudo systemctl daemon-reload
-                              
-- Verify your setup by running the command below and the output must look like this:
+  <img width="1120" alt="Screenshot 2022-05-02 at 13 37 19" src="https://user-images.githubusercontent.com/80678596/166227698-5d00a156-535d-44ab-b4cf-5cf65361144b.png">
 
-                                  df -h
-                                  
-<img width="574" alt="Screenshot 2022-05-02 at 13 54 50" src="https://user-images.githubusercontent.com/80678596/166229691-7ff1cb7a-ac93-4231-9599-3e5ecd98fa6a.png">
+  - oprn the /etc/fstab and update it using your own UUID and rememeber to remove the leading and ending quotes.
+
+                                                       sudo vi /etc/fstab                                    
+
+  <img width="759" alt="Screenshot 2022-05-02 at 13 55 54" src="https://user-images.githubusercontent.com/80678596/166229823-2d90e954-8f71-4e0f-b317-daa5ae56fcf6.png">
+
+  - Test the configuration and reload the daemon
+
+                                      sudo mount -a
+
+                                sudo systemctl daemon-reload
+
+  - Verify your setup by running the command below and the output must look like this:
+
+                                    df -h
+
+  <img width="574" alt="Screenshot 2022-05-02 at 13 54 50" src="https://user-images.githubusercontent.com/80678596/166229691-7ff1cb7a-ac93-4231-9599-3e5ecd98fa6a.png">
+
+
+  ### Prepare a Database Server
+  
+  - Launch a second RedHat EC2 instance that will have a role – ‘DB Server’
+  
+  - Repeat the same steps as for the Web Server, but instead of apps-lv create db-lv and mount it to /db directory instead of /var/www/html/.
+  
+  <img width="519" alt="Screenshot 2022-05-02 at 15 38 21" src="https://user-images.githubusercontent.com/80678596/166243186-20b7a5ba-95c9-453a-94f2-e8c2850e9774.png">
+
+  ### Install WordPress on Web Server EC2
+  
+   - Update the repository
+                    
+                    sudo yum -y update
+                    
+   -Install wget, Apache and it’s dependencies
+   
+                  sudo yum -y install wget httpd php php-mysqlnd php-fpm php-json
+   
+   - Start Apache
+                          
+                          sudo systemctl enable httpd
+                          
+                          sudo systemctl start httpd
+
