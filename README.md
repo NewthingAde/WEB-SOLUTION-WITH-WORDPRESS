@@ -52,4 +52,49 @@ Use `gdisk` utility below to create a single partition on each of the 3 disks. P
  - Use lsblk utility to view the newly configured partition on each of the 3 disks.
 
   <img width="392" alt="Screenshot 2022-05-02 at 12 54 50" src="https://user-images.githubusercontent.com/80678596/166223456-23d0db01-c284-4210-8d1c-2a92b1152116.png">
-                    
+  
+ - Install lvm2 package using the command below 
+  
+                     sudo yum install lvm2
+  
+ - Run the command below to check for available partitions.
+  
+                      sudo lvmdiskscan
+                      
+  <img width="382" alt="Screenshot 2022-05-02 at 13 02 55" src="https://user-images.githubusercontent.com/80678596/166224204-cb43b53e-54ae-48fb-ad11-ecf9fd96b0ba.png">
+
+  **In RedHat/CentOS we mostly use yum package manager command**
+  
+ - Use `pvcreate` utility to mark each of 3 disks as physical volumes (PVs) to be used by LVM
+
+                            sudo pvcreate /dev/xvdb1
+                            sudo pvcreate /dev/xvdc1
+                            sudo pvcreate /dev/xvdd1
+                            
+- Verify that your Physical volume has been created successfully by running 
+
+                                sudo pvs
+                                
+  <img width="422" alt="Screenshot 2022-05-02 at 13 08 13" src="https://user-images.githubusercontent.com/80678596/166224756-1bb03e18-63cf-4b4d-90f3-6cd52aa11e68.png">
+  
+ - Use `vgcreate` utility to add all 3 PVs to a volume group (VG). Name the VG webdata-vg
+
+                      sudo vgcreate webdata-vg /dev/xvdd1 /dev/xvdc1 /dev/xvdb1
+                      
+ - Verify that your VG has been created successfully by running 
+ 
+                                          sudo vgs
+                                          
+ <img width="521" alt="Screenshot 2022-05-02 at 13 13 02" src="https://user-images.githubusercontent.com/80678596/166225295-f3f72238-58e4-4349-959a-10a87c0f9f7a.png">
+ 
+ - Use `lvcreate` utility to create 2 logical volumes. `apps-lv` (Use half of the PV size), and `logs-lv` Use the remaining space of the PV size. NOTE: apps-lv will be used to store data for the Website while, logs-lv will be used to store data for logs.
+
+                                      sudo lvcreate -n apps-lv -L 14G webdata-vg
+                                      
+                                      sudo lvcreate -n logs-lv -L 14G webdata-vg
+                                      
+ - Verify that your Logical Volume has been created successfully by running 
+                                                  
+                                                  sudo lvs
+                                                  
+  <img width="565" alt="Screenshot 2022-05-02 at 13 17 23" src="https://user-images.githubusercontent.com/80678596/166225639-4891cc38-e8ba-4e29-9aea-60de52b2fd01.png">
